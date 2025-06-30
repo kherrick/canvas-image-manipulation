@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Canvas Image Manipulation</title>
+    <style>
+      body {
+        background: #111;
+        box-sizing: border-box;
+        color: #fff;
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      #canvas-wrapper {
+        align-items: center;
+        aspect-ratio: 16/9;
+        background: transparent;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+      }
+
+      canvas {
+        background: transparent;
+        display: block;
+        max-height: 100%;
+        max-width: 100%;
+        touch-action: none;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+        text-align: left;
+      }
+
+      .filter-control {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .filter-control label {
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+
+      .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      input[type="range"] {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .value-display {
+        font-family: monospace;
+        font-size: 0.8rem;
+        min-width: 50px;
+        text-align: right;
+      }
+
+      .button-controls {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background: #333;
+        border: 1px solid #555;
+        border-radius: 4px;
+        color: #fff;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #444;
+      }
+
+      button:active {
+        background: #222;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>
+        <a href="https://kherrick.github.io/canvas-image-manipulation/">
+          Canvas Image Manipulation
+        </a>
+      </h2>
+      <div id="canvas-wrapper">
+        <canvas id="canvas"></canvas>
+      </div>
+      <div class="controls">
+        <div class="filter-control">
+          <label for="blur-range">Blur</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="blur-range"
+              min="0"
+              max="10"
+              step="0.1"
+              value="0"
+            />
+            <span id="blur-value" class="value-display">0.0px</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="brightness-range">Brightness</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="brightness-range"
+              min="0"
+              max="3"
+              step="0.01"
+              value="1"
+            />
+            <span id="brightness-value" class="value-display">1.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="contrast-range">Contrast</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="contrast-range"
+              min="0"
+              max="3"
+              step="0.01"
+              value="1"
+            />
+            <span id="contrast-value" class="value-display">1.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="saturation-range">Saturation</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="saturation-range"
+              min="0"
+              max="3"
+              step="0.01"
+              value="1"
+            />
+            <span id="saturation-value" class="value-display">1.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="grayscale-range">Grayscale</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="grayscale-range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0"
+            />
+            <span id="grayscale-value" class="value-display">0.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="hue-rotate-range">Hue Rotate</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="hue-rotate-range"
+              min="0"
+              max="360"
+              step="1"
+              value="0"
+            />
+            <span id="hue-rotate-value" class="value-display">0°</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="invert-range">Invert</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="invert-range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0"
+            />
+            <span id="invert-value" class="value-display">0.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="opacity-range">Opacity</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="opacity-range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="1"
+            />
+            <span id="opacity-value" class="value-display">1.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label for="sepia-range">Sepia</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="sepia-range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0"
+            />
+            <span id="sepia-value" class="value-display">0.00</span>
+          </div>
+        </div>
+
+        <div class="filter-control">
+          <label>Drop Shadow</label>
+          <div style="display: flex; flex-direction: column; gap: 0.3rem">
+            <div class="slider-container">
+              <label style="min-width: 60px; font-weight: normal">X:</label>
+              <input
+                type="range"
+                id="shadow-x-range"
+                min="-20"
+                max="20"
+                step="1"
+                value="0"
+              />
+              <span id="shadow-x-value" class="value-display">0px</span>
+            </div>
+            <div class="slider-container">
+              <label style="min-width: 60px; font-weight: normal">Y:</label>
+              <input
+                type="range"
+                id="shadow-y-range"
+                min="-20"
+                max="20"
+                step="1"
+                value="0"
+              />
+              <span id="shadow-y-value" class="value-display">0px</span>
+            </div>
+            <div class="slider-container">
+              <label style="min-width: 60px; font-weight: normal">Blur:</label>
+              <input
+                type="range"
+                id="shadow-blur-range"
+                min="0"
+                max="20"
+                step="0.5"
+                value="0"
+              />
+              <span id="shadow-blur-value" class="value-display">0px</span>
+            </div>
+            <div class="slider-container">
+              <label style="min-width: 60px; font-weight: normal">Color:</label>
+              <input
+                type="color"
+                id="shadow-color"
+                value="#000000"
+                style="width: 40px; height: 25px"
+              />
+              <span style="flex: 1"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-controls">
+          <button id="crop-selection" type="button">Crop Selection</button>
+          <button id="flip-horizontal" type="button">Flip Horizontal</button>
+          <button id="flip-vertical" type="button">Flip Vertical</button>
+          <button id="rotate-90" type="button">Rotate 90°</button>
+          <button id="reset-filters" type="button">Reset All</button>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      const imageUrl =
+        "https://kherrick.github.io/x-ml-data/2025/01/aurora-borealis/2025-01-01-aurora-borealis.jpg";
+
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const wrapper = document.getElementById("canvas-wrapper");
+
+      // Get all filter controls
+      const filterControls = {
+        blur: {
+          range: document.getElementById("blur-range"),
+          value: document.getElementById("blur-value"),
+          default: 0,
+          unit: "px",
+        },
+        brightness: {
+          range: document.getElementById("brightness-range"),
+          value: document.getElementById("brightness-value"),
+          default: 1,
+          unit: "",
+        },
+        contrast: {
+          range: document.getElementById("contrast-range"),
+          value: document.getElementById("contrast-value"),
+          default: 1,
+          unit: "",
+        },
+        saturation: {
+          range: document.getElementById("saturation-range"),
+          value: document.getElementById("saturation-value"),
+          default: 1,
+          unit: "",
+        },
+        grayscale: {
+          range: document.getElementById("grayscale-range"),
+          value: document.getElementById("grayscale-value"),
+          default: 0,
+          unit: "",
+        },
+        hueRotate: {
+          range: document.getElementById("hue-rotate-range"),
+          value: document.getElementById("hue-rotate-value"),
+          default: 0,
+          unit: "°",
+        },
+        invert: {
+          range: document.getElementById("invert-range"),
+          value: document.getElementById("invert-value"),
+          default: 0,
+          unit: "",
+        },
+        opacity: {
+          range: document.getElementById("opacity-range"),
+          value: document.getElementById("opacity-value"),
+          default: 1,
+          unit: "",
+        },
+        sepia: {
+          range: document.getElementById("sepia-range"),
+          value: document.getElementById("sepia-value"),
+          default: 0,
+          unit: "",
+        },
+        shadowX: {
+          range: document.getElementById("shadow-x-range"),
+          value: document.getElementById("shadow-x-value"),
+          default: 0,
+          unit: "px",
+        },
+        shadowY: {
+          range: document.getElementById("shadow-y-range"),
+          value: document.getElementById("shadow-y-value"),
+          default: 0,
+          unit: "px",
+        },
+        shadowBlur: {
+          range: document.getElementById("shadow-blur-range"),
+          value: document.getElementById("shadow-blur-value"),
+          default: 0,
+          unit: "px",
+        },
+      };
+
+      const shadowColorPicker = document.getElementById("shadow-color");
+
+      let img = new window.Image();
+      let imgLoaded = false;
+      let isCropped = false;
+      let lastDrawParams = null;
+      let croppedImageData = null;
+      let rotationAngle = 0; // Track rotation in 90-degree increments
+      let flipHorizontal = false; // Track horizontal flip
+      let flipVertical = false; // Track vertical flip
+
+      img.crossOrigin = "anonymous";
+      img.onload = function () {
+        imgLoaded = true;
+        resizeAndDraw();
+      };
+
+      img.src = imageUrl;
+
+      function buildFilterString() {
+        const filters = [];
+
+        const blurVal = Number(filterControls.blur.range.value);
+        if (blurVal > 0) filters.push(`blur(${blurVal}px)`);
+
+        const brightnessVal = Number(filterControls.brightness.range.value);
+        if (brightnessVal !== 1) filters.push(`brightness(${brightnessVal})`);
+
+        const contrastVal = Number(filterControls.contrast.range.value);
+        if (contrastVal !== 1) filters.push(`contrast(${contrastVal})`);
+
+        const saturationVal = Number(filterControls.saturation.range.value);
+        if (saturationVal !== 1) filters.push(`saturate(${saturationVal})`);
+
+        const grayscaleVal = Number(filterControls.grayscale.range.value);
+        if (grayscaleVal > 0) filters.push(`grayscale(${grayscaleVal})`);
+
+        const hueRotateVal = Number(filterControls.hueRotate.range.value);
+        if (hueRotateVal !== 0) filters.push(`hue-rotate(${hueRotateVal}deg)`);
+
+        const invertVal = Number(filterControls.invert.range.value);
+        if (invertVal > 0) filters.push(`invert(${invertVal})`);
+
+        const opacityVal = Number(filterControls.opacity.range.value);
+        if (opacityVal !== 1) filters.push(`opacity(${opacityVal})`);
+
+        const sepiaVal = Number(filterControls.sepia.range.value);
+        if (sepiaVal > 0) filters.push(`sepia(${sepiaVal})`);
+
+        // Drop shadow
+        const shadowX = Number(filterControls.shadowX.range.value);
+        const shadowY = Number(filterControls.shadowY.range.value);
+        const shadowBlur = Number(filterControls.shadowBlur.range.value);
+        const shadowColor = shadowColorPicker.value;
+
+        if (shadowX !== 0 || shadowY !== 0 || shadowBlur > 0) {
+          filters.push(
+            `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowColor})`
+          );
+        }
+
+        return filters.join(" ") || "none";
+      }
+
+      function applyFilters(drawFn) {
+        ctx.save();
+        ctx.filter = buildFilterString();
+        drawFn();
+        ctx.restore();
+      }
+
+      function applyTransforms() {
+        // Apply rotation if needed
+        if (rotationAngle !== 0) {
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate((rotationAngle * Math.PI) / 180);
+          ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+
+        // Apply flips if needed
+        if (flipHorizontal || flipVertical) {
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1);
+          ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+      }
+
+      function drawImageFitted() {
+        const canvasAspect = canvas.width / canvas.height;
+        const imgAspect = img.width / img.height;
+
+        // Calculate shadow padding
+        const shadowX = Math.abs(Number(filterControls.shadowX.range.value));
+        const shadowY = Math.abs(Number(filterControls.shadowY.range.value));
+        const shadowBlur = Number(filterControls.shadowBlur.range.value);
+        const maxShadowOffset = Math.max(
+          shadowX + shadowBlur,
+          shadowY + shadowBlur
+        );
+        const padding = maxShadowOffset > 0 ? maxShadowOffset + 5 : 0;
+
+        // Adjust available space for shadow padding
+        const availableWidth = canvas.width - padding * 2;
+        const availableHeight = canvas.height - padding * 2;
+        const availableAspect = availableWidth / availableHeight;
+
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (imgAspect > availableAspect) {
+          drawWidth = availableWidth;
+          drawHeight = availableWidth / imgAspect;
+          offsetX = padding;
+          offsetY = padding + (availableHeight - drawHeight) / 2;
+        } else {
+          drawHeight = availableHeight;
+          drawWidth = availableHeight * imgAspect;
+          offsetX = padding + (availableWidth - drawWidth) / 2;
+          offsetY = padding;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Apply transforms
+        if (rotationAngle !== 0 || flipHorizontal || flipVertical) {
+          ctx.save();
+          applyTransforms();
+        }
+
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+        if (rotationAngle !== 0 || flipHorizontal || flipVertical) {
+          ctx.restore();
+        }
+
+        lastDrawParams = { offsetX, offsetY, drawWidth, drawHeight };
+      }
+
+      function drawImageWithFilters() {
+        if (isCropped) {
+          return;
+        }
+        applyFilters(drawImageFitted);
+      }
+
+      function resizeAndDraw() {
+        if (isCropped) {
+          return;
+        }
+
+        const rect = wrapper.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        if (imgLoaded) {
+          drawImageWithFilters();
+          drawSelectionRect();
+        }
+      }
+
+      function updateLabels() {
+        Object.keys(filterControls).forEach((key) => {
+          const control = filterControls[key];
+          const val = Number(control.range.value);
+
+          if (key === "hueRotate") {
+            control.value.textContent = val + control.unit;
+          } else if (key === "blur" || key.startsWith("shadow")) {
+            control.value.textContent =
+              val.toFixed(key === "shadowBlur" ? 1 : 0) + control.unit;
+          } else {
+            control.value.textContent = val.toFixed(2) + control.unit;
+          }
+        });
+      }
+
+      function flipCroppedImage(horizontal, vertical) {
+        if (!croppedImageData) return;
+
+        // Get original dimensions
+        const originalWidth = croppedImageData.width;
+        const originalHeight = croppedImageData.height;
+
+        // Create temporary canvas with current cropped image
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCanvas.width = originalWidth;
+        tempCanvas.height = originalHeight;
+        tempCtx.putImageData(croppedImageData, 0, 0);
+
+        // Create new canvas for flipping
+        const flippedCanvas = document.createElement("canvas");
+        const flippedCtx = flippedCanvas.getContext("2d");
+        flippedCanvas.width = originalWidth;
+        flippedCanvas.height = originalHeight;
+
+        // Apply flip transformation
+        flippedCtx.save();
+        flippedCtx.translate(originalWidth / 2, originalHeight / 2);
+        flippedCtx.scale(horizontal ? -1 : 1, vertical ? -1 : 1);
+        flippedCtx.translate(-originalWidth / 2, -originalHeight / 2);
+        flippedCtx.drawImage(tempCanvas, 0, 0);
+        flippedCtx.restore();
+
+        // Update stored image data
+        croppedImageData = flippedCtx.getImageData(
+          0,
+          0,
+          originalWidth,
+          originalHeight
+        );
+      }
+
+      function rotateCroppedImage() {
+        if (!croppedImageData) return;
+
+        // Get original dimensions
+        const originalWidth = croppedImageData.width;
+        const originalHeight = croppedImageData.height;
+
+        // Create temporary canvas with current cropped image
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCanvas.width = originalWidth;
+        tempCanvas.height = originalHeight;
+        tempCtx.putImageData(croppedImageData, 0, 0);
+
+        // Create new canvas for rotation with swapped dimensions
+        const rotatedCanvas = document.createElement("canvas");
+        const rotatedCtx = rotatedCanvas.getContext("2d");
+        rotatedCanvas.width = originalHeight;
+        rotatedCanvas.height = originalWidth;
+
+        // Apply rotation
+        rotatedCtx.save();
+        rotatedCtx.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2);
+        rotatedCtx.rotate(Math.PI / 2);
+        rotatedCtx.translate(-originalWidth / 2, -originalHeight / 2);
+        rotatedCtx.drawImage(tempCanvas, 0, 0);
+        rotatedCtx.restore();
+
+        // Update stored image data and canvas dimensions
+        croppedImageData = rotatedCtx.getImageData(
+          0,
+          0,
+          rotatedCanvas.width,
+          rotatedCanvas.height
+        );
+        canvas.width = rotatedCanvas.width;
+        canvas.height = rotatedCanvas.height;
+      }
+
+      function updateFiltersOnCroppedImage() {
+        if (!isCropped || !croppedImageData) return;
+
+        // Calculate shadow padding for cropped images
+        const shadowX = Math.abs(Number(filterControls.shadowX.range.value));
+        const shadowY = Math.abs(Number(filterControls.shadowY.range.value));
+        const shadowBlur = Number(filterControls.shadowBlur.range.value);
+        const maxShadowOffset = Math.max(
+          shadowX + shadowBlur,
+          shadowY + shadowBlur
+        );
+        const padding = maxShadowOffset > 0 ? maxShadowOffset + 5 : 0;
+
+        // Get original cropped dimensions
+        const originalWidth = croppedImageData.width;
+        const originalHeight = croppedImageData.height;
+
+        // Set canvas size to original size plus padding
+        canvas.width = originalWidth + padding * 2;
+        canvas.height = originalHeight + padding * 2;
+
+        // Create temporary canvas with original cropped image data
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCanvas.width = originalWidth;
+        tempCanvas.height = originalHeight;
+        tempCtx.putImageData(croppedImageData, 0, 0);
+
+        ctx.save();
+        ctx.filter = buildFilterString();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tempCanvas, padding, padding);
+        ctx.restore();
+      }
+
+      function handleFilterChange() {
+        updateLabels();
+        if (imgLoaded) {
+          if (isCropped) {
+            updateFiltersOnCroppedImage();
+          } else {
+            drawImageWithFilters();
+            drawSelectionRect();
+          }
+        }
+      }
+
+      // Add event listeners to all filter controls
+      Object.keys(filterControls).forEach((key) => {
+        filterControls[key].range.addEventListener("input", handleFilterChange);
+      });
+
+      // Add event listener for shadow color picker
+      shadowColorPicker.addEventListener("input", handleFilterChange);
+
+      // Flip button handlers
+      document
+        .getElementById("flip-horizontal")
+        .addEventListener("click", function () {
+          if (isCropped) {
+            flipCroppedImage(true, false);
+            updateFiltersOnCroppedImage();
+          } else {
+            flipHorizontal = !flipHorizontal;
+            if (imgLoaded) {
+              drawImageWithFilters();
+              drawSelectionRect();
+            }
+          }
+        });
+
+      document
+        .getElementById("flip-vertical")
+        .addEventListener("click", function () {
+          if (isCropped) {
+            flipCroppedImage(false, true);
+            updateFiltersOnCroppedImage();
+          } else {
+            flipVertical = !flipVertical;
+            if (imgLoaded) {
+              drawImageWithFilters();
+              drawSelectionRect();
+            }
+          }
+        });
+
+      // Rotate button handler
+      document
+        .getElementById("rotate-90")
+        .addEventListener("click", function () {
+          if (isCropped) {
+            rotateCroppedImage();
+            updateFiltersOnCroppedImage();
+          } else {
+            rotationAngle = (rotationAngle + 90) % 360;
+            if (imgLoaded) {
+              drawImageWithFilters();
+              drawSelectionRect();
+            }
+          }
+        });
+
+      // Reset button handler
+      document
+        .getElementById("reset-filters")
+        .addEventListener("click", function () {
+          Object.keys(filterControls).forEach((key) => {
+            filterControls[key].range.value = filterControls[key].default;
+          });
+
+          // Reset shadow color
+          shadowColorPicker.value = "#000000";
+
+          // Reset rotation and flips
+          rotationAngle = 0;
+          flipHorizontal = false;
+          flipVertical = false;
+
+          updateLabels();
+
+          isCropped = false;
+          croppedImageData = null;
+
+          const rect = wrapper.getBoundingClientRect();
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+
+          selectionRect = null;
+
+          if (imgLoaded) {
+            drawImageWithFilters();
+          }
+        });
+
+      window.addEventListener("resize", resizeAndDraw);
+
+      window.addEventListener("DOMContentLoaded", () => {
+        updateLabels();
+        resizeAndDraw();
+      });
+
+      // Crop selection functionality
+      let isSelecting = false;
+      let selectionStart = null;
+      let selectionEnd = null;
+      let selectionRect = null;
+
+      function getCanvasPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        let x, y;
+
+        if (e.touches) {
+          x = e.touches[0].clientX - rect.left;
+          y = e.touches[0].clientY - rect.top;
+        } else {
+          x = e.clientX - rect.left;
+          y = e.clientY - rect.top;
+        }
+
+        x *= canvas.width / rect.width;
+        y *= canvas.height / rect.height;
+
+        return { x, y };
+      }
+
+      function drawSelectionRect() {
+        if (!selectionRect || isCropped) return;
+
+        ctx.save();
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6]);
+        ctx.strokeRect(
+          selectionRect.x,
+          selectionRect.y,
+          selectionRect.w,
+          selectionRect.h
+        );
+        ctx.restore();
+      }
+
+      function redrawWithSelection() {
+        if (isCropped) {
+          updateFiltersOnCroppedImage();
+        } else {
+          drawImageWithFilters();
+          drawSelectionRect();
+        }
+      }
+
+      function startSelection(e) {
+        if (isCropped) return;
+
+        isSelecting = true;
+        const pos = getCanvasPos(e);
+        selectionStart = pos;
+        selectionEnd = pos;
+        selectionRect = null;
+        redrawWithSelection();
+        e.preventDefault();
+      }
+
+      function updateSelection(e) {
+        if (!isSelecting || isCropped) return;
+        const pos = getCanvasPos(e);
+        selectionEnd = pos;
+
+        const x = Math.min(selectionStart.x, selectionEnd.x);
+        const y = Math.min(selectionStart.y, selectionEnd.y);
+        const w = Math.abs(selectionStart.x - selectionEnd.x);
+        const h = Math.abs(selectionStart.y - selectionEnd.y);
+        selectionRect = { x, y, w, h };
+        redrawWithSelection();
+        e.preventDefault();
+      }
+
+      function endSelection(e) {
+        if (!isSelecting || isCropped) return;
+        isSelecting = false;
+        updateSelection(e);
+        e.preventDefault();
+      }
+
+      const cropBtn = document.getElementById("crop-selection");
+
+      cropBtn.addEventListener("click", function () {
+        if (isCropped) {
+          alert("Already cropped. Use Reset All to return to original image.");
+          return;
+        }
+
+        if (!selectionRect || selectionRect.w < 5 || selectionRect.h < 5) {
+          alert("Please select a region to crop.");
+          return;
+        }
+
+        const { offsetX, offsetY, drawWidth, drawHeight } = lastDrawParams;
+        const scaleX = img.width / drawWidth;
+        const scaleY = img.height / drawHeight;
+
+        let sx = (selectionRect.x - offsetX) * scaleX;
+        let sy = (selectionRect.y - offsetY) * scaleY;
+        let sw = selectionRect.w * scaleX;
+        let sh = selectionRect.h * scaleY;
+
+        sx = Math.max(0, sx);
+        sy = Math.max(0, sy);
+        sw = Math.max(1, Math.min(img.width - sx, sw));
+        sh = Math.max(1, Math.min(img.height - sy, sh));
+
+        canvas.width = selectionRect.w;
+        canvas.height = selectionRect.h;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+          img,
+          sx,
+          sy,
+          sw,
+          sh,
+          0,
+          0,
+          selectionRect.w,
+          selectionRect.h
+        );
+
+        croppedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        isCropped = true;
+        updateFiltersOnCroppedImage();
+        selectionRect = null;
+      });
+
+      // Mouse events
+      canvas.addEventListener("mousedown", startSelection);
+      canvas.addEventListener("mousemove", updateSelection);
+      canvas.addEventListener("mouseup", endSelection);
+      canvas.addEventListener("mouseleave", endSelection);
+
+      // Touch events
+      canvas.addEventListener("touchstart", startSelection, { passive: false });
+      canvas.addEventListener("touchmove", updateSelection, { passive: false });
+      canvas.addEventListener("touchend", endSelection, { passive: false });
+
+      window.addEventListener("resize", () => {
+        if (!isCropped) {
+          selectionRect = null;
+        }
+      });
+    </script>
+  </body>
+</html>
